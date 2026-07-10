@@ -78,6 +78,7 @@
   .pname{font-weight:600}
   .prealm{color:var(--muted);font-size:12px;margin-left:6px}
   .cls{font-weight:600}
+  .pcls{display:none}
   .count{font-variant-numeric:tabular-nums;font-weight:700;font-size:15px;text-align:right;width:110px}
   .bar{height:5px;border-radius:3px;background:linear-gradient(90deg,var(--epic),#6d4bd6);margin-top:6px;min-width:2px}
 
@@ -112,9 +113,22 @@
   .empty{padding:56px 20px;text-align:center;color:var(--muted)}
   .empty b{color:var(--ink);display:block;font-size:16px;margin-bottom:6px;font-weight:600}
   @media (max-width:560px){
+    body{padding-left:12px;padding-right:12px}
+    header{padding-top:34px}
+    h1{font-size:24px}
+    .tabs{display:flex;width:100%}
+    .tab{flex:1;padding:9px 4px;text-align:center}
+    .controls,.chips,.summary,.imp{padding-left:14px;padding-right:14px}
+    th,td{padding:11px 12px}
+    /* Recuento: la clase pasa a subtitulo bajo el nombre */
+    .col-class{display:none}
+    .rank{width:24px}
+    .prealm{display:block;margin-left:0;margin-top:1px}
+    .pcls{display:block;font-size:11.5px;font-weight:600;margin-top:3px}
+    .count{width:auto;min-width:52px;font-size:14px}
+    /* Historial */
     .hrow{grid-template-columns:1fr auto;gap:8px}
     .hdate{grid-column:1/-1;order:-1}
-    th,td{padding:12px 14px}.controls,.chips,.summary{padding-left:14px;padding-right:14px}
   }
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
@@ -288,13 +302,13 @@
     $('recuento-body').innerHTML = '<table><thead><tr>'
         +'<th class="nosort rank">#</th>'
         +'<th data-sort="player">Jugador '+arrow('player')+'</th>'
-        +'<th class="nosort">Clase</th>'
+        +'<th class="nosort col-class">Clase</th>'
         +'<th data-sort="count" style="text-align:right">Entregas '+arrow('count')+'</th>'
       +'</tr></thead><tbody>'+list.map((p,i)=>
         '<tr>'
           +'<td class="rank">'+(i+1)+'</td>'
-          +'<td><span class="pname">'+esc(p.player)+'</span>'+(p.realm?'<span class="prealm">'+esc(p.realm)+'</span>':'')+'</td>'
-          +'<td class="cls" style="color:'+clsColor(p.class)+'">'+esc(classLabel(p.class))+'</td>'
+          +'<td><span class="pname">'+esc(p.player)+'</span>'+(p.realm?'<span class="prealm">'+esc(p.realm)+'</span>':'')+'<span class="pcls" style="color:'+clsColor(p.class)+'">'+esc(classLabel(p.class))+'</span></td>'
+          +'<td class="cls col-class" style="color:'+clsColor(p.class)+'">'+esc(classLabel(p.class))+'</td>'
           +'<td class="count">'+p.count+'<div class="bar" style="width:'+Math.round(p.count/max*100)+'%"></div></td>'
         +'</tr>').join('')+'</tbody></table>';
     $('recuento-body').querySelectorAll('th[data-sort]').forEach(th=>th.onclick=()=>{
