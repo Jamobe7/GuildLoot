@@ -6,150 +6,374 @@
 <title>Registro de Botín</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>const whTooltips={colorLinks:true,iconizeLinks:true,renderForms:false};</script>
+<script src="https://wow.zamimg.com/js/tooltips.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
-    --bg:#0b0d13;
-    --line:#262a3a;
-    --ink:#ece9f5;
-    --muted:#8a879c;
-    --epic:#a335ee;
-    --legendary:#ff8000;
-    --ok:#43d17a;
-    --err:#ff5964;
+    --bg:#0b0d13; --panel:#13151f; --panel2:#171a26;
+    --line:#262a3a; --line2:#343a54;
+    --ink:#ece9f5; --muted:#8a879c; --muted2:#b8b4c8;
+    --epic:#a335ee; --legendary:#ff8000; --rare:#3b82f6;
+    --ok:#43d17a; --err:#ff5964;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%}
+  html{-webkit-text-size-adjust:100%}
   body{
     font-family:'Barlow',system-ui,sans-serif;
-    background:
-      radial-gradient(1200px 600px at 50% -10%, #1b1636 0%, rgba(27,22,54,0) 60%),
-      var(--bg);
-    color:var(--ink);
-    min-height:100%;
-    display:grid;
-    place-items:center;
-    padding:24px;
+    background:radial-gradient(1100px 500px at 50% -12%, #1b1636 0%, rgba(27,22,54,0) 55%), var(--bg);
+    color:var(--ink); min-height:100vh; padding:0 20px 80px;
     -webkit-font-smoothing:antialiased;
   }
-  .card{
-    width:100%;
-    max-width:520px;
-    background:linear-gradient(180deg,#161826 0%, #101119 100%);
-    border:1px solid var(--line);
-    border-radius:14px;
-    overflow:hidden;
-    box-shadow:0 30px 80px -30px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.03);
-    animation:rise .7s cubic-bezier(.2,.7,.2,1) both;
-  }
-  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-  /* Firma: el espectro de rareza de objetos de WoW */
-  .spectrum{
-    height:4px;width:100%;
-    background:linear-gradient(90deg,
-      #9d9d9d 0 16%, #ffffff 16% 33%, #1eff00 33% 50%,
-      #0070dd 50% 66%, #a335ee 66% 83%, #ff8000 83% 100%);
-  }
-  .body{padding:40px 40px 34px}
-  .eyebrow{
-    font-weight:600;font-size:12px;letter-spacing:.22em;
-    text-transform:uppercase;color:var(--muted);margin-bottom:18px;
-  }
-  h1{font-family:'Cinzel',serif;font-weight:700;font-size:34px;line-height:1.08}
+  .spectrum{height:4px;width:100%;position:fixed;top:0;left:0;z-index:10;
+    background:linear-gradient(90deg,#9d9d9d 0 16%,#fff 16% 33%,#1eff00 33% 50%,#0070dd 50% 66%,#a335ee 66% 83%,#ff8000 83% 100%);}
+  .wrap{max-width:1000px;margin:0 auto}
+  header{padding:44px 0 22px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .brand .eyebrow{font-weight:600;font-size:11.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+  h1{font-family:'Cinzel',serif;font-weight:700;font-size:30px;line-height:1.05;margin-top:6px}
   h1 .accent{color:var(--epic)}
-  .lede{margin-top:14px;color:var(--muted);font-size:15.5px;line-height:1.55;max-width:42ch}
-  .status{
-    margin-top:30px;display:flex;align-items:flex-start;gap:12px;
-    padding:14px 16px;border:1px solid var(--line);border-radius:10px;
-    background:rgba(255,255,255,.02);font-size:14.5px;
+  .conn{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
+  .conn .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+  .conn.ok .dot{background:var(--ok);box-shadow:0 0 10px var(--ok)}
+  .conn.err .dot{background:var(--err);box-shadow:0 0 10px var(--err)}
+
+  .tabs{display:inline-flex;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:4px;margin-bottom:24px}
+  .tab{font-family:'Barlow';font-weight:600;font-size:13.5px;color:var(--muted2);background:transparent;
+    border:0;border-radius:8px;padding:9px 18px;cursor:pointer;transition:.15s}
+  .tab:hover{color:var(--ink)}
+  .tab.active{background:linear-gradient(180deg,#221a3a,#1a1530);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line2)}
+  .tab:focus-visible{outline:2px solid var(--epic);outline-offset:2px}
+
+  .panel{background:linear-gradient(180deg,#141626,#0f1017);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .view{display:none}
+  .view.active{display:block}
+
+  .controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding:18px 20px;border-bottom:1px solid var(--line)}
+  select,input[type=text],input[type=password],textarea{
+    font-family:'Barlow';font-size:14px;color:var(--ink);background:var(--panel2);
+    border:1px solid var(--line);border-radius:9px;padding:9px 12px;outline:none;transition:border-color .15s}
+  select:focus,input:focus,textarea:focus{border-color:var(--epic)}
+  input[type=text]{min-width:180px;flex:1}
+  .chips{display:flex;gap:7px;flex-wrap:wrap;padding:14px 20px;border-bottom:1px solid var(--line)}
+  .chip{font-size:12px;font-weight:600;letter-spacing:.02em;color:var(--muted2);background:var(--panel2);
+    border:1px solid var(--line);border-radius:999px;padding:6px 12px;cursor:pointer;user-select:none;transition:.14s;
+    display:inline-flex;align-items:center;gap:7px}
+  .chip .cdot{width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.9}
+  .chip.off{opacity:.4;text-decoration:line-through}
+  .chip:focus-visible{outline:2px solid var(--epic);outline-offset:2px}
+  .summary{padding:13px 20px;font-size:13px;color:var(--muted);border-bottom:1px solid var(--line)}
+  .summary b{color:var(--ink);font-weight:600}
+
+  table{width:100%;border-collapse:collapse}
+  th,td{text-align:left;padding:13px 20px;font-size:14px}
+  thead th{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;
+    border-bottom:1px solid var(--line);cursor:pointer;white-space:nowrap}
+  thead th.nosort{cursor:default}
+  thead th .arrow{color:var(--epic);font-size:10px}
+  tbody tr{border-bottom:1px solid rgba(38,42,58,.5)}
+  tbody tr:last-child{border-bottom:0}
+  tbody tr:hover{background:rgba(163,53,238,.05)}
+  .rank{color:var(--muted);font-variant-numeric:tabular-nums;width:38px}
+  .pname{font-weight:600}
+  .prealm{color:var(--muted);font-size:12px;margin-left:6px}
+  .cls{font-weight:600}
+  .count{font-variant-numeric:tabular-nums;font-weight:700;font-size:15px;text-align:right;width:110px}
+  .bar{height:5px;border-radius:3px;background:linear-gradient(90deg,var(--epic),#6d4bd6);margin-top:6px;min-width:2px}
+
+  .hist{list-style:none}
+  .hrow{display:grid;grid-template-columns:88px 1fr auto;gap:14px;align-items:center;padding:12px 20px;border-bottom:1px solid rgba(38,42,58,.5)}
+  .hrow:last-child{border-bottom:0}
+  .hrow:hover{background:rgba(163,53,238,.05)}
+  .hdate{color:var(--muted);font-size:12.5px;font-variant-numeric:tabular-nums}
+  .hitem a,.hitem span.noi{font-weight:600;color:var(--ink);text-decoration:none}
+  .hitem a:hover{text-decoration:underline}
+  .hmeta{color:var(--muted);font-size:12px;margin-top:2px}
+  .pill{font-size:11px;font-weight:700;letter-spacing:.04em;padding:4px 10px;border-radius:999px;white-space:nowrap;
+    border:1px solid currentColor;background:color-mix(in srgb, currentColor 12%, transparent)}
+  .more{display:block;width:100%;text-align:center;padding:14px;background:transparent;border:0;border-top:1px solid var(--line);
+    color:var(--muted2);font-family:'Barlow';font-weight:600;font-size:13px;cursor:pointer}
+  .more:hover{color:var(--ink);background:rgba(255,255,255,.02)}
+
+  .imp{padding:24px 20px;display:flex;flex-direction:column;gap:14px;max-width:720px}
+  .imp .hint{font-size:13.5px;color:var(--muted);line-height:1.55}
+  .imp .hint b{color:var(--muted2);font-weight:600}
+  .imp label{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:-6px}
+  textarea{min-height:200px;resize:vertical;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.5}
+  .imp-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .btn{font-family:'Barlow';font-weight:700;font-size:14px;color:#fff;
+    background:linear-gradient(180deg,#a94fe0,#8a2fd0);border:0;border-radius:10px;padding:11px 22px;cursor:pointer;transition:.15s}
+  .btn:hover{filter:brightness(1.08)}
+  .btn:disabled{opacity:.55;cursor:default}
+  .btn:focus-visible{outline:2px solid var(--epic);outline-offset:2px}
+  .msg{font-size:13.5px;line-height:1.5}
+  .msg.ok{color:var(--ok)} .msg.err{color:var(--err)} .msg.checking{color:var(--legendary)}
+
+  .empty{padding:56px 20px;text-align:center;color:var(--muted)}
+  .empty b{color:var(--ink);display:block;font-size:16px;margin-bottom:6px;font-weight:600}
+  @media (max-width:560px){
+    .hrow{grid-template-columns:1fr auto;gap:8px}
+    .hdate{grid-column:1/-1;order:-1}
+    th,td{padding:12px 14px}.controls,.chips,.summary{padding-left:14px;padding-right:14px}
   }
-  .dot{width:9px;height:9px;border-radius:50%;background:var(--muted);flex:none;margin-top:5px}
-  .status.checking .dot{background:var(--legendary);animation:pulse 1.1s ease-in-out infinite}
-  .status.ok .dot{background:var(--ok);box-shadow:0 0 12px var(--ok)}
-  .status.warn .dot{background:var(--legendary)}
-  .status.err .dot{background:var(--err);box-shadow:0 0 12px var(--err)}
-  @keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
-  .status .sub{display:block;color:var(--muted);font-size:12.5px;margin-top:3px;line-height:1.45}
-  .foot{margin-top:22px;display:flex;gap:14px;align-items:center}
-  button{
-    font-family:'Barlow';font-weight:600;font-size:13px;color:var(--ink);
-    background:transparent;border:1px solid var(--line);border-radius:8px;
-    padding:9px 14px;cursor:pointer;transition:border-color .15s,background .15s;
-  }
-  button:hover{border-color:var(--epic);background:rgba(163,53,238,.08)}
-  button:focus-visible{outline:2px solid var(--epic);outline-offset:2px}
-  .tag{margin-left:auto;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-  @media (max-width:480px){.body{padding:30px 24px}h1{font-size:27px}}
-  @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
-  <main class="card">
-    <div class="spectrum" aria-hidden="true"></div>
-    <div class="body">
-      <p class="eyebrow">Gestión de botín · RC Loot Council</p>
+<div class="spectrum" aria-hidden="true"></div>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="eyebrow">Gestión de botín · RC Loot Council</div>
       <h1>Registro de <span class="accent">Botín</span></h1>
-      <p class="lede">El histórico de reparto de la hermandad. Importa el JSON de RCLootCouncil y consulta quién se ha llevado qué.</p>
+    </div>
+    <div class="conn" id="conn"><span class="dot"></span><span id="conn-txt">Cargando…</span></div>
+  </header>
 
-      <div id="status" class="status checking" role="status" aria-live="polite">
-        <span class="dot" aria-hidden="true"></span>
-        <span><span id="status-txt">Comprobando la conexión…</span><span class="sub" id="status-sub"></span></span>
+  <div class="tabs" role="tablist">
+    <button class="tab active" data-view="recuento" role="tab">Recuento</button>
+    <button class="tab" data-view="historial" role="tab">Historial</button>
+    <button class="tab" data-view="importar" role="tab">Importar</button>
+  </div>
+
+  <section class="view active" id="view-recuento">
+    <div class="panel">
+      <div class="controls">
+        <select id="raid"><option value="all">Todas las raids</option></select>
+        <input type="text" id="search" placeholder="Buscar jugador…" autocomplete="off">
       </div>
+      <div class="chips" id="chips" aria-label="Filtrar por tipo de respuesta"></div>
+      <div class="summary" id="sum-recuento"></div>
+      <div id="recuento-body"></div>
+    </div>
+  </section>
 
-      <div class="foot">
-        <button id="retry" type="button">Reintentar</button>
-        <span class="tag">Publicada correctamente</span>
+  <section class="view" id="view-historial">
+    <div class="panel">
+      <div class="controls">
+        <select id="raid2"><option value="all">Todas las raids</option></select>
+        <input type="text" id="search2" placeholder="Buscar jugador…" autocomplete="off">
+      </div>
+      <div class="summary" id="sum-historial"></div>
+      <div id="historial-body"></div>
+    </div>
+  </section>
+
+  <section class="view" id="view-importar">
+    <div class="panel">
+      <div class="imp">
+        <p class="hint">Pega el JSON exportado del addon. En el juego: <b>/rc history</b> &rarr; boton Export &rarr; elige <b>JSON</b> &rarr; copia todo. Reimportar no duplica nada: cada entrega se identifica por su <b>id</b> unico.</p>
+        <label for="imp-pass">Contraseña</label>
+        <input type="password" id="imp-pass" placeholder="Contraseña de importación" autocomplete="off" style="max-width:320px">
+        <label for="imp-json">JSON de RCLootCouncil</label>
+        <textarea id="imp-json" placeholder='[ { "id": "...", "player": "Nombre-Reino", "itemID": 212000, ... } ]'></textarea>
+        <div class="imp-row">
+          <button class="btn" id="imp-btn">Importar botín</button>
+          <span class="msg" id="imp-msg"></span>
+        </div>
       </div>
     </div>
-  </main>
+  </section>
+</div>
 
 <script>
-  // ─────────────────────────────────────────────────────────────
-  //  CONFIGURA ESTO  (panel de Supabase → Settings → API)
-  //  · SUPABASE_URL:      "Project URL"
-  //  · SUPABASE_ANON_KEY: clave pública (anon / publishable)
-  //  Es seguro que esta clave sea pública: el RLS solo permite leer.
-  // ─────────────────────────────────────────────────────────────
   const SUPABASE_URL = "https://zobxpskhqfftagrilcli.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_yfcPrKCtkgB6gxe-_dz3qQ_yOTCgKjI";
 
-  const box = document.getElementById('status');
-  const txt = document.getElementById('status-txt');
-  const sub = document.getElementById('status-sub');
+  const CLASS_COLORS = {
+    WARRIOR:'#C69B6D', PALADIN:'#F48CBA', HUNTER:'#AAD372', ROGUE:'#FFF468',
+    PRIEST:'#FFFFFF', DEATHKNIGHT:'#C41E3A', SHAMAN:'#0070DD', MAGE:'#3FC7EB',
+    WARLOCK:'#8788EE', MONK:'#00FF98', DRUID:'#FF7C0A', DEMONHUNTER:'#A330C9', EVOKER:'#33937F'
+  };
+  const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-  function setStatus(kind, message, detail = ''){
-    box.className = 'status ' + kind;
-    txt.textContent = message;
-    sub.textContent = detail;
+  const state = { awards:[], raid:'all', search:'', responses:new Set(), allResponses:[], sort:{key:'count',dir:'desc'}, histLimit:120 };
+
+  function clsColor(c){ return CLASS_COLORS[(c||'').toUpperCase()] || 'var(--muted2)'; }
+  function classLabel(c){
+    if(!c) return '—';
+    const t = c.toLowerCase().replace('deathknight','death knight').replace('demonhunter','demon hunter');
+    return t.charAt(0).toUpperCase()+t.slice(1);
+  }
+  function responseColor(r){
+    const s=(r||'').toLowerCase();
+    if(/bis/.test(s)) return '#a335ee';
+    if(/main/.test(s)) return '#3fc7eb';
+    if(/off/.test(s)) return '#43d17a';
+    if(/(disench|greed|pass|shard|\bde\b)/.test(s)) return '#8a879c';
+    if(/(free|roll)/.test(s)) return '#ff8000';
+    return '#b8b4c8';
+  }
+  function fmtDate(iso){ if(!iso) return '—'; const d=new Date(iso); return isNaN(d)?'—':d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}); }
+
+  async function fetchAllAwards(){
+    const size=1000; let from=0, all=[];
+    while(true){
+      const { data, error } = await db.from('awards')
+        .select('id,player,realm,class,item_id,item_name,response,boss,instance,awarded_at')
+        .order('awarded_at',{ascending:false,nullsFirst:false})
+        .range(from, from+size-1);
+      if(error) throw error;
+      all = all.concat(data||[]);
+      if(!data || data.length<size) break;
+      from += size;
+    }
+    return all;
   }
 
-  async function check(){
-    if (SUPABASE_URL.includes('TU-PROYECTO') || SUPABASE_ANON_KEY.startsWith('TU_')){
-      setStatus('warn', 'Falta configurar la conexión',
-        'Edita SUPABASE_URL y SUPABASE_ANON_KEY en este archivo con los valores de tu proyecto.');
-      return;
-    }
-    setStatus('checking', 'Comprobando la conexión…');
+  async function loadData(){
+    setConn('checking','Cargando…');
     try{
-      const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      const { count, error } = await db
-        .from('awards')
-        .select('*', { count: 'exact', head: true });
-      if (error) throw error;
-      const n = count ?? 0;
-      setStatus('ok', 'Conectado a Supabase',
-        n === 0
-          ? 'Sin entregas todavía — importa tu primer JSON.'
-          : `${n} ${n === 1 ? 'entrega registrada' : 'entregas registradas'}.`);
+      state.awards = await fetchAllAwards();
+      const set = new Set(state.awards.map(a=>a.response).filter(Boolean));
+      state.allResponses = [...set].sort();
+      if(state.responses.size===0) state.allResponses.forEach(r=>state.responses.add(r));
+      fillRaids();
+      renderChips();
+      renderAll();
+      setConn('ok', state.awards.length+' entregas');
     }catch(e){
-      setStatus('err', 'No se pudo conectar',
-        'Revisa la Project URL y la clave anónima. Detalle: ' + (e?.message ?? e));
+      setConn('err','Sin conexión');
+      $('recuento-body').innerHTML = '<div class="empty"><b>No se pudieron cargar los datos</b>Revisa la conexión con Supabase. '+esc(e.message||e)+'</div>';
     }
   }
 
-  document.getElementById('retry').addEventListener('click', check);
-  check();
+  function setConn(kind,txt){ const c=$('conn'); c.className='conn '+(kind==='ok'?'ok':kind==='err'?'err':''); $('conn-txt').textContent=txt; }
+
+  function fillRaids(){
+    const raids=[...new Set(state.awards.map(a=>a.instance).filter(Boolean))].sort();
+    for(const sel of [$('raid'),$('raid2')]){
+      const cur=sel.value;
+      sel.innerHTML='<option value="all">Todas las raids</option>'+raids.map(r=>'<option value="'+esc(r)+'">'+esc(r)+'</option>').join('');
+      sel.value=[...sel.options].some(o=>o.value===cur)?cur:'all';
+    }
+  }
+
+  function renderChips(){
+    $('chips').innerHTML = state.allResponses.map(r=>{
+      const on=state.responses.has(r), col=responseColor(r);
+      return '<button class="chip '+(on?'':'off')+'" style="color:'+col+'" data-r="'+esc(r)+'" aria-pressed="'+on+'">'
+        +'<span class="cdot"></span><span style="color:var(--ink)">'+esc(r)+'</span></button>';
+    }).join('') || '<span style="color:var(--muted);font-size:12px">Sin datos todavía</span>';
+  }
+
+  function filtered(){
+    return state.awards.filter(a=>{
+      if(state.raid!=='all' && a.instance!==state.raid) return false;
+      if(!state.responses.has(a.response)) return false;
+      if(state.search && !(a.player||'').toLowerCase().includes(state.search)) return false;
+      return true;
+    });
+  }
+
+  function renderRecuento(){
+    const rows=filtered();
+    const byPlayer=new Map();
+    for(const a of rows){
+      const key=a.player||'—';
+      if(!byPlayer.has(key)) byPlayer.set(key,{player:key,realm:a.realm,class:a.class,count:0});
+      const p=byPlayer.get(key); p.count++; if(!p.class&&a.class)p.class=a.class;
+    }
+    let list=[...byPlayer.values()];
+    const {key,dir}=state.sort, mul=dir==='asc'?1:-1;
+    list.sort((x,y)=> key==='player' ? mul*x.player.localeCompare(y.player) : (mul*(x.count-y.count) || x.player.localeCompare(y.player)));
+    const max=Math.max(1,...list.map(p=>p.count));
+
+    $('sum-recuento').innerHTML = '<b>'+rows.length+'</b> entregas · <b>'+list.length+'</b> jugadores';
+    const arrow=(k)=> state.sort.key===k ? '<span class="arrow">'+(state.sort.dir==='asc'?'▲':'▼')+'</span>' : '';
+
+    if(!list.length){ $('recuento-body').innerHTML = emptyBlock(); return; }
+    $('recuento-body').innerHTML = '<table><thead><tr>'
+        +'<th class="nosort rank">#</th>'
+        +'<th data-sort="player">Jugador '+arrow('player')+'</th>'
+        +'<th class="nosort">Clase</th>'
+        +'<th data-sort="count" style="text-align:right">Entregas '+arrow('count')+'</th>'
+      +'</tr></thead><tbody>'+list.map((p,i)=>
+        '<tr>'
+          +'<td class="rank">'+(i+1)+'</td>'
+          +'<td><span class="pname">'+esc(p.player)+'</span>'+(p.realm?'<span class="prealm">'+esc(p.realm)+'</span>':'')+'</td>'
+          +'<td class="cls" style="color:'+clsColor(p.class)+'">'+esc(classLabel(p.class))+'</td>'
+          +'<td class="count">'+p.count+'<div class="bar" style="width:'+Math.round(p.count/max*100)+'%"></div></td>'
+        +'</tr>').join('')+'</tbody></table>';
+    $('recuento-body').querySelectorAll('th[data-sort]').forEach(th=>th.onclick=()=>{
+      const k=th.dataset.sort;
+      state.sort = state.sort.key===k ? {key:k,dir:state.sort.dir==='asc'?'desc':'asc'} : {key:k,dir:k==='player'?'asc':'desc'};
+      renderRecuento();
+    });
+  }
+
+  function renderHistorial(){
+    const rows=filtered();
+    $('sum-historial').innerHTML = '<b>'+rows.length+'</b> entregas';
+    if(!rows.length){ $('historial-body').innerHTML = emptyBlock(); return; }
+    const shown=rows.slice(0,state.histLimit);
+    const item=(a)=> a.item_id
+      ? '<a href="https://www.wowhead.com/item='+a.item_id+'" target="_blank" rel="noopener">'+esc(a.item_name||('Objeto '+a.item_id))+'</a>'
+      : '<span class="noi">'+esc(a.item_name||'Objeto desconocido')+'</span>';
+    $('historial-body').innerHTML = '<ul class="hist">'+shown.map(a=>
+      '<li class="hrow">'
+        +'<span class="hdate">'+fmtDate(a.awarded_at)+'</span>'
+        +'<div class="hitem">'+item(a)
+          +'<div class="hmeta"><span style="color:'+clsColor(a.class)+';font-weight:600">'+esc(a.player)+'</span>'+(a.boss?' · '+esc(a.boss):'')+(a.instance?' · '+esc(a.instance):'')+'</div>'
+        +'</div>'
+        +'<span class="pill" style="color:'+responseColor(a.response)+'">'+esc(a.response||'—')+'</span>'
+      +'</li>').join('')+'</ul>'
+      +(rows.length>state.histLimit?'<button class="more" id="more-btn">Ver más ('+(rows.length-state.histLimit)+' restantes)</button>':'');
+    const mb=$('more-btn'); if(mb) mb.onclick=()=>{ state.histLimit+=120; renderHistorial(); };
+    if(window.$WowheadPower && $WowheadPower.refreshLinks) try{$WowheadPower.refreshLinks();}catch(e){}
+  }
+
+  function emptyBlock(){
+    return state.awards.length
+      ? '<div class="empty"><b>Nada con estos filtros</b>Prueba a activar más respuestas o cambiar de raid.</div>'
+      : '<div class="empty"><b>Aún no hay entregas</b>Ve a la pestaña Importar para añadir tu primer JSON de RCLootCouncil.</div>';
+  }
+
+  function renderAll(){ renderRecuento(); renderHistorial(); }
+
+  function impMsg(kind,txt){ const m=$('imp-msg'); m.className='msg '+kind; m.textContent=txt; }
+  async function doImport(){
+    const password=$('imp-pass').value.trim();
+    const raw=$('imp-json').value.trim();
+    if(!password){ impMsg('err','Escribe la contraseña de importación.'); return; }
+    if(!raw){ impMsg('err','Pega el JSON exportado de RCLootCouncil.'); return; }
+    let data; try{ data=JSON.parse(raw); }catch{ data=raw; }
+    const btn=$('imp-btn'); btn.disabled=true; impMsg('checking','Importando…');
+    try{
+      const res=await fetch(SUPABASE_URL+'/functions/v1/import-loot',{
+        method:'POST',
+        headers:{ 'Content-Type':'application/json', apikey:SUPABASE_ANON_KEY },
+        body:JSON.stringify({ password, data })
+      });
+      const out=await res.json().catch(()=>({}));
+      if(!res.ok){ impMsg('err', out.error || ('Error '+res.status+'. ¿Desactivaste "Verify JWT" en la función?')); return; }
+      impMsg('ok', 'Hecho: '+out.inserted+' nuevas · '+out.skipped+' ya estaban · '+out.received+' en total.');
+      $('imp-json').value='';
+      await loadData();
+    }catch(e){
+      impMsg('err','No se pudo contactar con el servidor de importación: '+(e.message||e));
+    }finally{ btn.disabled=false; }
+  }
+
+  document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active'); $('view-'+t.dataset.view).classList.add('active');
+  });
+  $('chips').addEventListener('click',e=>{ const c=e.target.closest('.chip'); if(!c)return;
+    const r=c.dataset.r; state.responses.has(r)?state.responses.delete(r):state.responses.add(r);
+    renderChips(); renderAll(); });
+  function syncRaid(v){ state.raid=v; $('raid').value=v; $('raid2').value=v; renderAll(); }
+  function syncSearch(v){ state.search=v.toLowerCase(); $('search').value=v; $('search2').value=v; renderAll(); }
+  $('raid').onchange=e=>syncRaid(e.target.value);
+  $('raid2').onchange=e=>syncRaid(e.target.value);
+  $('search').oninput=e=>syncSearch(e.target.value);
+  $('search2').oninput=e=>syncSearch(e.target.value);
+  $('imp-btn').onclick=doImport;
+
+  loadData();
 </script>
 </body>
 </html>
